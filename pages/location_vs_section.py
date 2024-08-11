@@ -13,16 +13,19 @@ from utilities.get_location import extract_location_code
 
 # Set your train here
 
+if "data" not in st.session_state:
+    st.warning("Please upload the relevant data first!")
+else:
+    data = st.session_state.data
 
-data = st.session_state.data
 
+    locations_list = extract_location_code(data)
 
-locations_list = extract_location_code(data)
+    location_selection = st.selectbox("Select a location", locations_list)
+    location: str = location_selection
+    # Extract dates, times, and sections
+    data_for_plot = []
 
-location_selection = st.selectbox("Select a location", locations_list)
-location: str = location_selection
-# Extract dates, times, and sections
-data_for_plot = []
 
 
 def can_proceed(place, input_entry):
@@ -91,6 +94,7 @@ if location is not None:
                         data_for_plot.extend([
                             {"Date": start_dt, "Section": section,
                                 "Details": details},
+
                             {"Date": end_dt, "Section": section, "Details": details}
                         ])
                 else:
@@ -114,49 +118,50 @@ if location is not None:
         fig = go.Figure()
 
         # Add scatter trace for each location
-        for section_name in df['Section']:
-            df_section = df[df['Section'] == section_name]
-            fig.add_trace(go.Scatter(
-                x=df_section['Date'],
-                y=df_section['Section'],
-                mode='markers',
-                name=section_name,
-                marker=dict(size=10),
-                hoverinfo='text',  # Display custom hover text
-                hovertext=df_section['Details'],
-                # Store details for click events
-                customdata=df_section['Details']
-            ))
+        if df.empty:
+            st.warning("Sorry! No incidents occured here")
+        else:
+            for section_name in df['Section']:
+                df_section = df[df['Section'] == section_name]
+                fig.add_trace(go.Scatter(
+                    x=df_section['Date'],
+                    y=df_section['Section'],
+                    mode='markers',
+                    name=section_name,
+                    marker=dict(size=10),
+                    hoverinfo='text',  # Display custom hover text
+                    hovertext=df_section['Details'],
+                    customdata=df_section['Details']  # Store details for click events
+                ))
 
-        # Define click event handler
-        fig.update_layout(
-            title="Sections vs Date and Time for location {}".format(location),
-            xaxis_title="Date and Time",
-            yaxis_title="Sections",
-            hovermode='closest'
-        )
-
-        st.plotly_chart(fig)
-
-        # Add a button to export the DataFrame as an Excel file
-        @st.cache_data
-        def to_excel(datadf):
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                datadf.to_excel(excel_writer=writer,
-                                index=False, sheet_name='Sheet1')
-            processed_data = output.getvalue()
-            return processed_data
-
-        if st.button('Export to Excel'):
-            excel_file = to_excel(df)
-            st.download_button(
-                label="Download Excel file",
-                data=excel_file,
-                file_name="dataframe.xlsx",
-                mime="application/vnd.ms-excel"
+            # Define click event handler
+            fig.update_layout(
+                title="Sections vs Date and Time for location {}".format(location),
+                xaxis_title="Date and Time",
+                yaxis_title="Sections",
+                hovermode='closest'
             )
-    except Exception as e:
-        st.write("No case in this location")
-else:
-    st.write("Select a location")
+
+            st.plotly_chart(fig)
+
+            # Add a button to export the DataFrame as an Excel file
+            @st.cache_data
+            def to_excel(datadf):
+                output = BytesIO()
+                with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                    datadf.to_excel(excel_writer=writer,
+                                    index=False, sheet_name='Sheet1')
+                processed_data = output.getvalue()
+                return processed_data
+
+            if st.button('Export to Excel'):
+                excel_file = to_excel(df)
+                st.download_button(
+                    label="Download Excel file",
+                    data=excel_file,
+                    file_name="dataframe.xlsx",
+                    mime="application/vnd.ms-excel"
+                )
+            else:
+                st.write("Select a location")
+
