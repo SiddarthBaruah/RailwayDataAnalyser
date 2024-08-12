@@ -18,14 +18,13 @@ if "data" not in st.session_state:
 else:
     data = st.session_state.data
 
-    trains_dict = get_trains(data)
+    trains_dict = st.session_state.trains
     trains_list = list(trains_dict.keys())
 
     train_selection = st.selectbox("Select a train", trains_list)
     train: str = train_selection
     # Extract dates, times, and sections
     data_for_plot = []
-
 
     def can_proceed(locations, input_entry):
         if 'between' in input_entry:
@@ -39,7 +38,6 @@ else:
                 if '-' not in loc and loc in input_entry:
                     return True
         return False
-
 
     def textwrap_html_style(input_text, max_width):
         """
@@ -56,7 +54,6 @@ else:
         for i in range(0, len(input_text), max_width):
             result += input_text[i: i + max_width] + "<br>"
         return result[:-4]  # Remove the trailing '<br>'
-
 
     if train is not None:
         for index, entry in data.iterrows():
@@ -102,7 +99,8 @@ else:
                 marker=dict(size=10),
                 hoverinfo='text',  # Display custom hover text
                 hovertext=df_section['Details'],
-                customdata=df_section['Details']  # Store details for click events
+                # Store details for click events
+                customdata=df_section['Details']
             ))
 
         # Define click event handler
