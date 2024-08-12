@@ -18,14 +18,12 @@ if "data" not in st.session_state:
 else:
     data = st.session_state.data
 
-
-    locations_list = extract_location_code(data)
+    locations_list = st.session_state.location_list
 
     location_selection = st.selectbox("Select a location", locations_list)
     location: str = location_selection
     # Extract dates, times, and sections
     data_for_plot = []
-
 
 
 def can_proceed(place, input_entry):
@@ -131,12 +129,14 @@ if location is not None:
                     marker=dict(size=10),
                     hoverinfo='text',  # Display custom hover text
                     hovertext=df_section['Details'],
-                    customdata=df_section['Details']  # Store details for click events
+                    # Store details for click events
+                    customdata=df_section['Details']
                 ))
 
             # Define click event handler
             fig.update_layout(
-                title="Sections vs Date and Time for location {}".format(location),
+                title="Sections vs Date and Time for location {}".format(
+                    location),
                 xaxis_title="Date and Time",
                 yaxis_title="Sections",
                 hovermode='closest'
@@ -164,4 +164,5 @@ if location is not None:
                 )
             else:
                 st.write("Select a location")
-
+    except Exception as e:
+        st.write(str(e))

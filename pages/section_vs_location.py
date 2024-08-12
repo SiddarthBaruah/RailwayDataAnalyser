@@ -16,11 +16,10 @@ else:
     data = st.session_state.data
     st.title("Section vs Place Report")
 
-    location_list = extract_location_code(data)
-
+    location_list = st.session_state.location_list
 
     # Set your section here
-    sections = get_section(data)
+    sections = st.session_state.sections
     sections_list = list(sections.keys())
 
     selected_section = st.selectbox("Select a section", sections_list)
@@ -32,7 +31,6 @@ else:
 
     # Extract dates, times, and sections
     data_for_plot = []
-
 
     def can_proceed(input_locations, input_entry):
         """
@@ -57,7 +55,6 @@ else:
                     return True
         return False
 
-
     def textwrap_html_style(input_text, max_width):
         """
         This function takes a string and inserts '<br>' tags after every max_width characters.
@@ -74,7 +71,6 @@ else:
             result += input_text[i: i + max_width] + "<br>"
         return result[:-4]  # Remove the trailing '<br>'
 
-
     if len(locations) != 0 and section is not None:
         try:
             for index, entry in data.iterrows():
@@ -87,11 +83,13 @@ else:
                         f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
                         f"Sections: {entry['Sections']}"  # Customize details as needed
                     if "to" in entry["Occurrence Date & Time"]:
-                        start, end = entry["Occurrence Date & Time"].split(" to ")
+                        start, end = entry["Occurrence Date & Time"].split(
+                            " to ")
                         start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
                         end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
                         data_for_plot.extend([
-                            {"Date": start_dt, "Section": location, "Details": details},
+                            {"Date": start_dt, "Section": location,
+                                "Details": details},
                             {"Date": end_dt, "Section": location, "Details": details}
                         ])
                     else:
@@ -123,7 +121,8 @@ else:
 
             # Define click event handler
             fig.update_layout(
-                title="Sections vs Date and Time for Section {}".format(section),
+                title="Sections vs Date and Time for Section {}".format(
+                    section),
                 xaxis_title="Date and Time",
                 yaxis_title="Sections",
                 hovermode='closest'
