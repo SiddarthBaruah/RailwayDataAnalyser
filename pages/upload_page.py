@@ -13,19 +13,20 @@ if "location_lat_long" not in st.session_state:
     latlong = pd.read_excel("data/station_data.xlsx")
     st.session_state.location_lat_long = get_location_lat_long(latlong)
 
-if "data" not in st.session_state:
-    upload_form = st.form("upload_form", clear_on_submit=True, border=True)
-    uploaded_file = upload_form.file_uploader(
-        "Please submit a excel file (.xls) containing the data to be analyzed here:", type=['xls'])
-    submit = upload_form.form_submit_button("Submit")
 
-    if submit:
-        if uploaded_file:
-            data = pd.read_excel(uploaded_file)
-            st.session_state.data = data
+upload_form = st.form("upload_form", clear_on_submit=True, border=True)
+uploaded_file = upload_form.file_uploader(
+    "Please submit a excel file (.xls) containing the data to be analyzed here:", type=['xls'])
+submit = upload_form.form_submit_button("Submit")
 
-        else:
-            st.warning("Please upload the relevant data!")
+if submit:
+    if uploaded_file:
+        data = pd.read_excel(uploaded_file, sheet_name=None)
+        data = pd.concat(data.values(), ignore_index=True)
+        st.session_state.data = data
+
+    else:
+        st.warning("Please upload the relevant data!")
 
 if "data" in st.session_state:
     data = st.session_state.data
