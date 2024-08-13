@@ -6,7 +6,7 @@ __pycache__/
 test.ipynb
 # C extensions
 *.so
-
+data/temp
 # Distribution / packaging
 .Python
 build/
