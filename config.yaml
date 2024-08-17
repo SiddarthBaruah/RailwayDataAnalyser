@@ -1,21 +1,28 @@
-credentials:
-  usernames:
-    jsmith:
-      email: jsmith@gmail.com
-      failed_login_attempts: 0 # Will be managed automatically
-      logged_in: False # Will be managed automatically
-      name: John Smith
-      password: abc # Will be hashed automatically
-    rbriggs:
-      email: rbriggs@gmail.com
-      failed_login_attempts: 0 # Will be managed automatically
-      logged_in: False # Will be managed automatically
-      name: Rebecca Briggs
-      password: def # Will be hashed automatically
 cookie:
   expiry_days: 30
-  key: some_signature_key # Must be string
-  name: some_cookie_name
-pre-authorized:
+  key: random_signature_key
+  name: random_cookie_name
+credentials:
+  usernames:
+    abc:
+      email: abc@123.com
+      logged_in: false
+      name: abc
+      password: $2b$12$PSSHTYJVqBa5Fws0N1ZBZeklX0tkvNbN1uYxUTE6MtSPIlvvGBDuS
+    nfrmain:
+      email: ccmfm@nfr.railnet.gov.in
+      name: North East Frontier Railway
+      password: $2b$12$FNz9mXSxGCKCaTCH7hSB/uUGHqvnZ45efHnN3dZN5Ywa52GQpo/66
+    sid:
+      email: baruah38@gmail.com
+      logged_in: false
+      name: sid
+      password: $2b$12$595A3Ge7tKLSncPLQqVU4e24UBidfbI1ERJOMsorejvDoJJAhxNaS
+    siddarth:
+      email: siddarthbaruah39@gmail.com
+      logged_in: false
+      name: Sid
+      password: $2b$12$JycelC1/V9iZhlnVV8rVAO/xn24KWEibQCMzd0TUJbn4NXSOUm1Dy
+preauthorized:
   emails:
-  - melsby@gmail.com
+  - siddarthbaruah39@gmail.com

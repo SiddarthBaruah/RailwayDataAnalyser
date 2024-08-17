@@ -48,7 +48,8 @@ if "data" in st.session_state:
     )
     # Render the map
     r = pdk.Deck(
-        layers=[column_layer, arc_layer, scatter_layer, text_layer_arcs],
+        layers=[column_layer, arc_layer,
+                scatter_layer],
         initial_view_state=view_state,
         tooltip={"text": "{station}: {count} incidents"},
         map_style='mapbox://styles/mapbox/light-v10'

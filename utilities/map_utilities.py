@@ -21,13 +21,13 @@ def get_location_lat_long(data: pd.core.frame.DataFrame):
 
 
 def calculate_radius(count):
-    max_radius = 20000
-    return min(max_radius, 10000 * np.log1p(count))
+    max_radius = 10000
+    return min(max_radius, 2500 * np.log1p(count))
 
 
 def calculate_elevation(count):
-    max_elevation = 400
-    return min(max_elevation, 100 * np.log1p(count))
+    max_elevation = 200
+    return min(max_elevation, 50 * np.log1p(count))
 
 # Function to safely convert coordinates
 
@@ -63,6 +63,7 @@ def calculate_color(count):
         return [red, green, 0, 160]
 
 
+# @st.cache_data
 def get_map_data(incident_counts: dict):
     """
         Inputs location and the frequency of the cases
@@ -92,7 +93,7 @@ def get_map_data(incident_counts: dict):
         get_position='coordinates',
         get_elevation='elevation',
         elevation_scale=100,
-        radius=4000,
+        radius=1000,
         get_fill_color='color',
         pickable=True,
         extruded=True,
@@ -109,6 +110,20 @@ def get_map_data(incident_counts: dict):
                                  'count': count,
                                  'station': station})
                 # hex_data.append([lon, lat, count])
+        else:
+            station = station.split('-')
+            if station[0] in station_coords:
+                lat, lon = station_coords[station[0]]
+                hex_data.append({"lat": lat,
+                                 "lon": lon,
+                                 'count': count,
+                                 'station': station[0]})
+            if station[1] in station_coords:
+                lat, lon = station_coords[station[1]]
+                hex_data.append({"lat": lat,
+                                 "lon": lon,
+                                 'count': count,
+                                 'station': station[1]})
 
     arc_data = []
 
@@ -135,7 +150,7 @@ def get_map_data(incident_counts: dict):
         'HexagonLayer',
         data=hex_data,
         get_position=["lon", "lat"],
-        get_elevation=["count"],
+        get_elevation=2,
         radius=10000,
         elevation_scale=50,
         elevation_range=[0, 3000],
@@ -174,6 +189,26 @@ def get_map_data(incident_counts: dict):
                     'coordinates': [lon, lat],
                     'count': count,
                     'station': station,
+                    'radius': calculate_radius(count),
+                    'color': calculate_color(count)
+                })
+        else:
+            station = station.split('-')
+            if station[0] in station_coords:
+                lat, lon = station_coords[station[0]]
+                scatter_data.append({
+                    'coordinates': [lon, lat],
+                    'count': count,
+                    'station': station[0],
+                    'radius': calculate_radius(count),
+                    'color': calculate_color(count)
+                })
+            if station[1] in station_coords:
+                lat, lon = station_coords[station[1]]
+                scatter_data.append({
+                    'coordinates': [lon, lat],
+                    'count': count,
+                    'station': station[1],
                     'radius': calculate_radius(count),
                     'color': calculate_color(count)
                 })
