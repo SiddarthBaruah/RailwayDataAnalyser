@@ -21,11 +21,19 @@ st.title("Hi "+str(st.session_state["username"])+"!")
 # Creating an update user details widget
 if st.session_state["authentication_status"]:
     try:
-        if authenticator.update_user_details(st.session_state["username"]):
+        if authenticator.update_user_details(st.session_state["username"], key='update_user_details_form'):
             st.success('Entries updated successfully')
     except UpdateError as e:
         st.error(e)
-
+# Creating a password reset widget
+if st.session_state["authentication_status"]:
+    try:
+        if authenticator.reset_password(st.session_state["username"], key='reset_password_form'):
+            st.success('Password modified successfully')
+    except ResetError as e:
+        st.error(e)
+    except CredentialsError as e:
+        st.error(e)
 # Saving config file
 with open('config.yaml', 'w', encoding='utf-8') as file:
     yaml.dump(config, file, default_flow_style=False)
