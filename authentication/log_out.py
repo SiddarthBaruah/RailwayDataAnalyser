@@ -17,7 +17,7 @@ authenticator = st.session_state.authenticator
 
 print("from lofout page="+str(st.session_state["authentication_status"]))
 
-st.title("Hi "+str(st.session_state["username"])+"!")
+st.title("Hi "+str(st.session_state["name"])+"!")
 # Creating an update user details widget
 if st.session_state["authentication_status"]:
     try:
