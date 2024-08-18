@@ -3,6 +3,16 @@ import streamlit as st
 
 from utilities.load_data import load_data
 
+hide_elements = """
+<style>
+#GithubIcon {visibility: hidden;}
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+.stDeployButton {visibility: hidden;}
+[data-testid="stStatusWidget"] {visibility: hidden;}
+</style>
+"""
+st.markdown(hide_elements, unsafe_allow_html=True)
 print("from homepage")
 
 if "logged_in" not in st.session_state:
@@ -20,7 +30,7 @@ if "priviledge" not in st.session_state:
 login_page = st.Page("authentication/login.py",
                      title="Log in", icon=":material/login:")
 logout_page = st.Page("authentication/log_out.py",
-                      title="Log out", icon=":material/logout:")
+                      title="Account", icon=":material/logout:")
 forgot_password = st.Page(
     "authentication/forgot_password.py", title="Forgot Password", icon=":material/logout:")
 forgot_username = st.Page(

@@ -15,6 +15,7 @@ credentials:
       password: $2b$12$FNz9mXSxGCKCaTCH7hSB/uUGHqvnZ45efHnN3dZN5Ywa52GQpo/66
     sid:
       email: baruah38@gmail.com
+      failed_login_attempts: 1
       logged_in: false
       name: sid
       password: $2b$12$595A3Ge7tKLSncPLQqVU4e24UBidfbI1ERJOMsorejvDoJJAhxNaS
