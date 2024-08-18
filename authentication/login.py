@@ -48,7 +48,7 @@ if authentication_status:
     st.write(f'Welcome *{st.session_state["name"]}*')
     # authenticator.logout("Logout", "sidebar")
     print("Entered here")
-    if username == "nfrmain":
+    if username == "igrpfnfr":
         st.session_state.priviledge = True
     else:
         st.session_state.priviledge = False
