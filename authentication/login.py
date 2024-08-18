@@ -41,7 +41,7 @@ if "authenticator" not in st.session_state:
 
 # Creating a login widget
 
-name, authentication_status, username = authenticator.login()
+name, authentication_status, username = authenticator.login(key='login_form')
 
 
 if authentication_status:
@@ -58,12 +58,3 @@ elif st.session_state["authentication_status"] is False:
 elif st.session_state["authentication_status"] is None:
     st.warning('Please enter your username and password')
 print(st.session_state["authentication_status"])
-# Creating a password reset widget
-if st.session_state["authentication_status"]:
-    try:
-        if authenticator.reset_password(st.session_state["username"]):
-            st.success('Password modified successfully')
-    except ResetError as e:
-        st.error(e)
-    except CredentialsError as e:
-        st.error(e)
