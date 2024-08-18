@@ -9,7 +9,7 @@ credentials:
       logged_in: false
       name: abc
       password: $2b$12$PSSHTYJVqBa5Fws0N1ZBZeklX0tkvNbN1uYxUTE6MtSPIlvvGBDuS
-    ig_rpf_nfr:
+    ig-rpf-nfr:
       email: ccmfm@nfr.railnet.gov.in
       name: IG North East Frontier Railway
       password: $2b$12$FNz9mXSxGCKCaTCH7hSB/uUGHqvnZ45efHnN3dZN5Ywa52GQpo/66
