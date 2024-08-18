@@ -21,6 +21,8 @@ print("from login page")
 # Loading config file
 with open('config.yaml', 'r', encoding='utf-8') as file:
     config = yaml.load(file, Loader=SafeLoader)
+    if "config" not in st.session_state:
+        st.session_state.config = config
 
 # Hashing all plain text passwords once
 # Hasher.hash_passwords(config['credentials'])
@@ -38,14 +40,14 @@ if "authenticator" not in st.session_state:
     st.session_state.authenticator = authenticator
 
 # Creating a login widget
-try:
-    name, authentication_status, username = authenticator.login()
-except LoginError as e:
-    st.error(e)
 
-if st.session_state["authentication_status"]:
+name, authentication_status, username = authenticator.login()
+
+
+if authentication_status:
     st.write(f'Welcome *{st.session_state["name"]}*')
     # authenticator.logout("Logout", "sidebar")
+    print("Entered here")
     if username == "nfrmain":
         st.session_state.priviledge = True
     else:
@@ -65,16 +67,3 @@ if st.session_state["authentication_status"]:
         st.error(e)
     except CredentialsError as e:
         st.error(e)
-
-
-# Creating an update user details widget
-if st.session_state["authentication_status"]:
-    try:
-        if authenticator.update_user_details(st.session_state["username"]):
-            st.success('Entries updated successfully')
-    except UpdateError as e:
-        st.error(e)
-
-# Saving config file
-with open('config.yaml', 'w', encoding='utf-8') as file:
-    yaml.dump(config, file, default_flow_style=False)
