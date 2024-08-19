@@ -13,6 +13,7 @@ footer {visibility: hidden;}
 </style>
 """
 st.markdown(hide_elements, unsafe_allow_html=True)
+
 print("from homepage")
 
 if "logged_in" not in st.session_state:
@@ -45,6 +46,7 @@ trains_vs_section = st.Page(
     "pages/trains_vs_section.py", title="Train")
 location_vs_section = st.Page(
     "pages/location_vs_section.py", title="Location")
+section = st.Page("pages/section.py", title="Section")
 
 st.sidebar.image("images/Logo.png", width=100)
 
@@ -53,14 +55,14 @@ if st.session_state["authentication_status"]:
         pg = st.navigation(
             {
                 "Account": [logout_page, register_user],
-                "Reports": [upload_data, section_vs_location, trains_vs_section, location_vs_section],
+                "Reports": [upload_data, section, section_vs_location, trains_vs_section, location_vs_section],
             }
         )
     else:
         pg = st.navigation(
             {
                 "Account": [logout_page],
-                "Reports": [upload_data, section_vs_location, trains_vs_section, location_vs_section],
+                "Reports": [upload_data, section,  section_vs_location, trains_vs_section, location_vs_section],
             }
         )
 else:

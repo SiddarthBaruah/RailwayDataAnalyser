@@ -24,6 +24,7 @@ with open('config.yaml', 'r', encoding='utf-8') as file:
     if "config" not in st.session_state:
         st.session_state.config = config
 
+
 # Hashing all plain text passwords once
 # Hasher.hash_passwords(config['credentials'])
 
@@ -48,7 +49,7 @@ if authentication_status:
     st.write(f'Welcome *{st.session_state["name"]}*')
     # authenticator.logout("Logout", "sidebar")
     print("Entered here")
-    if username == "igrpfnfr":
+    if username == "ig-rpf-nfr":
         st.session_state.priviledge = True
     else:
         st.session_state.priviledge = False

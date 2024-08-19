@@ -24,6 +24,46 @@ def extract_location_code(data: pd.core.frame.DataFrame):
     return locations
 
 
+def extract_location_code_for_given_section(data: pd.core.frame.DataFrame, section: str):
+    """
+    This function would return all the unique locations
+    """
+    """
+    This function would return all the unique locations with frequency
+    """
+    locations = {}
+    st.session_state.maxcase = 0
+    st.session_state.caseAvg = 0
+    for _, entry in data.iterrows():
+        if section in str(entry["Sections"]):
+            temp = str(entry["Occurrence Location"])
+            if 'between' in temp:
+                temp = temp.split("between")
+                temp = temp[1].strip().split(" ")
+                temp = temp[0]+"-" + temp[2]
+                if temp not in locations:
+                    locations[temp] = 0
+                locations[temp] += 1
+            else:
+                temp = temp.split(" ")
+                for i in temp:
+                    if (len(i) == 3 or len(i) == 4) and i.isupper() and i.isalpha():
+                        if i not in locations:
+                            locations[i] = 0
+                        locations[i] += 1
+    summ = 0
+    maxcase = 0
+    for _, value in locations.items():
+        maxcase = max(maxcase, value)
+        summ += value
+    caseAvg = summ/len(locations)
+    sd = 0
+    for _, value in locations.items():
+        sd += (value-st.session_state.caseAvg)**2
+    sd /= len(locations)
+    return locations, maxcase, caseAvg, sd
+
+
 def extract_location_code_freq(data: pd.core.frame.DataFrame):
     """
     This function would return all the unique locations with frequency
