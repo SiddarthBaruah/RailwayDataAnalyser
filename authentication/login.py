@@ -24,6 +24,7 @@ with open('config.yaml', 'r', encoding='utf-8') as file:
     if "config" not in st.session_state:
         st.session_state.config = config
 
+
 # Hashing all plain text passwords once
 # Hasher.hash_passwords(config['credentials'])
 
