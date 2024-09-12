@@ -54,15 +54,15 @@ if st.session_state["authentication_status"]:
     if st.session_state.priviledge:
         pg = st.navigation(
             {
-                "Account": [logout_page, register_user],
                 "Reports": [upload_data, section, section_vs_location, trains_vs_section, location_vs_section],
+                "Account": [logout_page, register_user]
             }
         )
     else:
         pg = st.navigation(
             {
-                "Account": [logout_page],
                 "Reports": [upload_data, section,  section_vs_location, trains_vs_section, location_vs_section],
+                "Account": [logout_page]
             }
         )
 else:
