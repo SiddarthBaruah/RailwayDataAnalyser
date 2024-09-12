@@ -26,7 +26,7 @@ with open('config.yaml', 'r', encoding='utf-8') as file:
 
 
 # Hashing all plain text passwords once
-# Hasher.hash_passwords(config['credentials'])
+Hasher.hash_passwords(config['credentials'])
 
 # Creating the authenticator object
 authenticator = stauth.Authenticate(
@@ -49,7 +49,7 @@ if authentication_status:
     st.write(f'Welcome *{st.session_state["name"]}*')
     # authenticator.logout("Logout", "sidebar")
     print("Entered here")
-    if username == "ig-rpf-nfr":
+    if username == "ig-rpf-nfr" or username == "P8GH-U7RA-B2G8-USLJ":
         st.session_state.priviledge = True
     else:
         st.session_state.priviledge = False

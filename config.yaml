@@ -13,18 +13,18 @@ credentials:
       email: ccmfm@nfr.railnet.gov.in
       logged_in: false
       name: IG North East Frontier Railway
-      password: $2b$12$595A3Ge7tKLSncPLQqVU4e24UBidfbI1ERJOMsorejvDoJJAhxNaS
-    sid:
-      email: baruah38@gmail.com
-      failed_login_attempts: 1
-      logged_in: false
-      name: sid
-      password: $2b$12$595A3Ge7tKLSncPLQqVU4e24UBidfbI1ERJOMsorejvDoJJAhxNaS
-    siddarth:
+      password: $2b$12$.0N5ng/Rznn0zApK45VNrO.f/CB2BbNJzZrCw4BJauTPOANBSUXsm
+    p8gh-u7ra-b2g8-uslj:
       email: siddarthbaruah39@gmail.com
       logged_in: false
+      name: superUser
+      password: $2b$12$/wVQTku.LrjoHMaZkQOpFOnQrDzdAAxJv/oDNIYPe3PMBQRuLUE4G
+    sid:
+      email: siddarthbaruah39@gmail.com
+      failed_login_attempts: 1
+      logged_in: false
       name: Sid
-      password: $2b$12$JycelC1/V9iZhlnVV8rVAO/xn24KWEibQCMzd0TUJbn4NXSOUm1Dy
+      password: $2b$12$E3qF.vKCRSa4MDnoI8kcxeiHUf8vTr4XuEUsoP2nAY1Qy4GdvqFka
 preauthorized:
   emails:
   - siddarthbaruah39@gmail.com

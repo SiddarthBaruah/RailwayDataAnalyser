@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 test.ipynb
+credentials
 # C extensions
 *.so
 data/temp
