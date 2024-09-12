@@ -13,7 +13,7 @@ credentials:
       email: ccmfm@nfr.railnet.gov.in
       logged_in: false
       name: IG North East Frontier Railway
-      password: igrpfnfr@24
+      password: $2b$12$595A3Ge7tKLSncPLQqVU4e24UBidfbI1ERJOMsorejvDoJJAhxNaS
     sid:
       email: baruah38@gmail.com
       failed_login_attempts: 1
