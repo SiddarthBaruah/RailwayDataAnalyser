@@ -49,7 +49,7 @@ location_vs_section = st.Page(
 section = st.Page("pages/section.py", title="Section")
 
 st.sidebar.image("images/Logo.png", width=100)
-
+##
 if st.session_state["authentication_status"]:
     if st.session_state.priviledge:
         pg = st.navigation(
