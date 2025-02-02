@@ -3,6 +3,7 @@ from io import BytesIO
 from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
+import zipfile
 
 
 import streamlit as st
@@ -13,7 +14,7 @@ from utilities.get_location import extract_location_code
 
 # Set your train here
 
-
+zip_buffer= BytesIO()
 def can_proceed(place, input_entry):
     """
     Checks if the location exist in the input_entry
@@ -39,6 +40,7 @@ def textwrap_html_style(input_text, max_width):
       The processed string with '<br>' tags inserted.
     """
     result = ""
+    input_text= str(input_text)
     for i in range(0, len(input_text), max_width):
         result += input_text[i: i + max_width] + "<br>"
     return result[:-4]  # Remove the trailing '<br>'
@@ -70,9 +72,9 @@ else:
                         f"Occurrence Location: {entry['Occurrence Location']}<br>" \
                         f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
                         f"Sections: {entry['Sections']}"  # Customize details as needed
-                    if "to" in entry["Occurrence Date & Time"]:
+                    if "to" in str(entry["Occurrence Date & Time"]):
 
-                        start, end = entry["Occurrence Date & Time"].split(
+                        start, end = str(entry["Occurrence Date & Time"]).split(
                             " to ")
                         start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
                         end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
@@ -100,7 +102,7 @@ else:
                     else:
 
                         dt = datetime.strptime(
-                            entry["Occurrence Date & Time"], "%d/%m/%Y %H:%M")
+                            str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
                         if commmaexist:
                             data_for_plot.append(
                                 {"Date": dt, "Section": section[0], "Details": details})
@@ -166,5 +168,132 @@ else:
                     )
                 else:
                     st.write("Select a location")
+                # Add a multiselect widget for selecting multiple locations
+                st.divider()
+                st.write("Select multiple locations to download their data in separate excel files.")
+                selected_locations = st.multiselect("Select multiple locations", locations_list)
+
+                if selected_locations:
+                    for loc in selected_locations:
+                        data_for_plot = []
+                        for index, entry in data.iterrows():
+                            commmaexist = False
+                            if can_proceed(loc, str(entry["Occurrence Location"])):
+                                section = str(entry["Sections"])
+                                if ',' in section:
+                                    commmaexist = True
+                                    section = section.split(",")
+                                details = f"Details: {textwrap_html_style(entry['Occurrence Details'],80)}<br>" \
+                                    f"Occurrence Location: {entry['Occurrence Location']}<br>" \
+                                    f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
+                                    f"Sections: {entry['Sections']}"
+                                if "to" in str(entry["Occurrence Date & Time"]):
+                                    start, end = str(entry["Occurrence Date & Time"]).split(" to ")
+                                    start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
+                                    end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
+                                    if commmaexist:
+                                        data_for_plot.extend([
+                                            {"Date": start_dt, "Section": section[0], "Details": details},
+                                            {"Date": end_dt, "Section": section[0], "Details": details}
+                                        ])
+                                        data_for_plot.extend([
+                                            {"Date": start_dt, "Section": section[1], "Details": details},
+                                            {"Date": end_dt, "Section": section[1], "Details": details}
+                                        ])
+                                    else:
+                                        data_for_plot.extend([
+                                            {"Date": start_dt, "Section": section, "Details": details},
+                                            {"Date": end_dt, "Section": section, "Details": details}
+                                        ])
+                                else:
+                                    try:
+                                        dt = datetime.strptime(str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
+                                    except ValueError:
+                                        dt= "Invalid Date"    
+                                    if commmaexist:
+                                        data_for_plot.append({"Date": dt, "Section": section[0], "Details": details})
+                                        data_for_plot.append({"Date": dt, "Section": section[1], "Details": details})
+                                    else:
+                                        data_for_plot.append({"Date": dt, "Section": section, "Details": details})
+
+                        df_loc = pd.DataFrame(data_for_plot)
+
+                        if not df_loc.empty:
+                            excel_file = to_excel(df_loc)
+                            st.download_button(
+                                label=f"Download Excel file for {loc}",
+                                data=excel_file,
+                                file_name=f"{loc}_dataframe.xlsx",
+                                mime="application/vnd.ms-excel"
+                            )
         except Exception as e:
             st.write(str(e))
+        st.divider()
+        st.write("CLick the button below to download the data for all the locations at once as seperate files. It would be downloaded as excel file")
+        st.write("Please be patient as the processing of all the data and downloading may take some time.")
+        if st.button("Download for all the location"):
+            zip_buffer = BytesIO()
+            total_locations= len(locations_list)
+            location_count = 0
+            download_bar= st.progress(0, "Processing and downloading data for all locations")
+            with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+                for loc in locations_list:
+                    location_count+=1
+                    download_bar.progress(location_count/total_locations, text=f"Processing and downloading data for {loc}, {location_count} of {total_locations}")
+                    data_for_plot = []
+                    for index, entry in data.iterrows():
+                        commmaexist = False
+                        if can_proceed(loc, str(entry["Occurrence Location"])):
+                            section = str(entry["Sections"])
+                            if ',' in section:
+                                commmaexist = True
+                                section = section.split(",")
+                            details = f"Details: {textwrap_html_style(entry['Occurrence Details'],80)}<br>" \
+                                    f"Occurrence Location: {entry['Occurrence Location']}<br>" \
+                                    f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
+                                    f"Sections: {entry['Sections']}"
+                            if "to" in str(entry["Occurrence Date & Time"]):
+                                start, end = str(entry["Occurrence Date & Time"]).split(" to ")
+                                start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
+                                end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
+                                if commmaexist:
+                                    data_for_plot.extend([
+                                        {"Date": start_dt, "Section": section[0], "Details": details},
+                                        {"Date": end_dt, "Section": section[0], "Details": details}
+                                    ])
+                                    data_for_plot.extend([
+                                        {"Date": start_dt, "Section": section[1], "Details": details},
+                                        {"Date": end_dt, "Section": section[1], "Details": details}
+                                    ])
+                                else:
+                                    data_for_plot.extend([
+                                        {"Date": start_dt, "Section": section, "Details": details},
+                                        {"Date": end_dt, "Section": section, "Details": details}
+                                    ])
+                            else:
+                                try:
+                                    dt = datetime.strptime(str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
+                                except ValueError:
+                                    dt = "Invalid Date"
+                                if commmaexist:
+                                    data_for_plot.append({"Date": dt, "Section": section[0], "Details": details})
+                                    data_for_plot.append({"Date": dt, "Section": section[1], "Details": details})
+                                else:
+                                    data_for_plot.append({"Date": dt, "Section": section, "Details": details})
+
+                    df_loc = pd.DataFrame(data_for_plot)
+
+                    if not df_loc.empty:
+                        excel_file = to_excel(df_loc)
+                        zipf.writestr(f"{loc}_dataframe.xlsx", excel_file)
+
+            # Move buffer to the beginning
+            zip_buffer.seek(0)
+
+            # Create a single download button for the ZIP file
+            st.download_button(
+                label="Download All Locations Data",
+                data=zip_buffer,
+                file_name="locations_data.zip",
+                mime="application/zip"
+            )

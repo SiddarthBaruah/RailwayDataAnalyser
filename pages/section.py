@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from io import BytesIO
 import pydeck as pdk
-
+import zipfile
 from utilities.map_utilities import get_map_data_for_section
 
 
@@ -70,6 +70,7 @@ else:
         The processed string with '<br>' tags inserted.
         """
         result = ""
+        input_text= str(input_text)
         for i in range(0, len(input_text), max_width):
             result += input_text[i: i + max_width] + "<br>"
         return result[:-4]  # Remove the trailing '<br>'
@@ -85,8 +86,8 @@ else:
                         f"Occurrence Location: {entry['Occurrence Location']}<br>" \
                         f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
                         f"Sections: {entry['Sections']}"  # Customize details as needed
-                    if "to" in entry["Occurrence Date & Time"]:
-                        start, end = entry["Occurrence Date & Time"].split(
+                    if "to" in str(entry["Occurrence Date & Time"]):
+                        start, end = str(entry["Occurrence Date & Time"]).split(
                             " to ")
                         start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
                         end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
@@ -97,7 +98,7 @@ else:
                         ])
                     else:
                         dt = datetime.strptime(
-                            entry["Occurrence Date & Time"], "%d/%m/%Y %H:%M")
+                            str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
                         data_for_plot.append(
                             {"Date": dt, "Section": location, "Details": details})
 
@@ -171,9 +172,115 @@ else:
                     file_name="dataframe.xlsx",
                     mime="application/vnd.ms-excel"
                 )
+            
         except Exception as e:
             st.write(
                 f"Selected location has no case registered under Section {section}")
-
     else:
         st.write("Select the option to generate report")
+    st.divider()
+    st.write("Select multiple sections to download the data from that section")
+    selected_sections = st.multiselect("Select sections", sections_list)
+
+    if selected_sections:
+        for section in selected_sections:
+            data_for_plot = []
+            try:
+                for index, entry in data.iterrows():
+                    if (section in str(entry["Sections"])):
+                        location = extract_location_text(
+                            str(entry["Occurrence Location"]))
+                        details = f"Details: {textwrap_html_style(entry['Occurrence Details'],80)}<br>" \
+                            f"Occurrence Location: {entry['Occurrence Location']}<br>" \
+                            f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
+                            f"Sections: {entry['Sections']}"
+                        if "to" in str(entry["Occurrence Date & Time"]):
+                            start, end = str(entry["Occurrence Date & Time"]).split(
+                                " to ")
+                            start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
+                            end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
+                            data_for_plot.extend([
+                                {"Date": start_dt, "Section": location,
+                                    "Details": details},
+                                {"Date": end_dt, "Section": location, "Details": details}
+                            ])
+                        else:
+                            dt = datetime.strptime(
+                                str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
+                            data_for_plot.append(
+                                {"Date": dt, "Section": location, "Details": details})
+
+                df = pd.DataFrame(data_for_plot)
+
+                if st.button(f'Export {section} to Excel'):
+                    excel_file = to_excel(df)
+                    st.download_button(
+                        label=f"Download {section} Excel file",
+                        data=excel_file,
+                        file_name=f"{section}_dataframe.xlsx",
+                        mime="application/vnd.ms-excel"
+                    )
+
+            except Exception as e:
+                st.write(
+                    f"Selected location has no case registered under Section {section}")
+    else:
+        st.write("Select the option to generate report")
+    st.divider()
+    st.write("Select the option below to download the data for all the sections as different files in ZIP. It would take time to process all the data.")
+    st.write("Please be patient and wait for the download button to appear.")
+    if st.button("Download for all the sections"):
+        zip_buffer = BytesIO()
+        download_bar= st.progress(0)
+        total_section= len(sections_list)
+        section_count= 0
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for section in sections_list:
+                data_for_plot = []
+                section_count+=1
+                download_bar.progress(section_count/total_section, f"Processing section number: {section}, {section_count} section out of {total_section} completed")
+                try:
+                    for index, entry in data.iterrows():
+
+                        if (section in str(entry["Sections"])):
+                            location = extract_location_text(
+                                str(entry["Occurrence Location"]))
+                            details = f"Details: {textwrap_html_style(entry['Occurrence Details'],80)}<br>" \
+                                f"Occurrence Location: {entry['Occurrence Location']}<br>" \
+                                f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
+                                f"Sections: {entry['Sections']}"
+                            if "to" in str(entry["Occurrence Date & Time"]):
+                                start, end = str(entry["Occurrence Date & Time"]).split(
+                                    " to ")
+                                start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
+                                end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
+                                data_for_plot.extend([
+                                    {"Date": start_dt, "Section": location,
+                                        "Details": details},
+                                    {"Date": end_dt, "Section": location, "Details": details}
+                                ])
+                            else:
+                                try:
+                                    dt = datetime.strptime(str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
+                                except ValueError:
+                                    data_for_plot.append(
+                                    {"Date": "Invalid", "Section": section, "Details": details})
+                                data_for_plot.append(
+                                    {"Date": dt, "Section": location, "Details": details})
+
+                    df = pd.DataFrame(data_for_plot)
+                    if not df.empty:
+                        excel_file = to_excel(df)
+                        zipf.writestr(f"{section}_dataframe.xlsx", excel_file)
+                    # Move buffer to the beginning  
+                except Exception as e:
+                    st.write(
+                        f"Selected location has no case registered under Section {section}")
+        zip_buffer.seek(0)
+        st.download_button(
+            label="Download All Section Data",
+            data=zip_buffer,
+            file_name="sections_data.zip",
+            mime="application/zip"
+        )
+

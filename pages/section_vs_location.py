@@ -67,6 +67,7 @@ else:
         The processed string with '<br>' tags inserted.
         """
         result = ""
+        input_text= str(input_text)
         for i in range(0, len(input_text), max_width):
             result += input_text[i: i + max_width] + "<br>"
         return result[:-4]  # Remove the trailing '<br>'
@@ -82,8 +83,8 @@ else:
                         f"Occurrence Location: {entry['Occurrence Location']}<br>" \
                         f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
                         f"Sections: {entry['Sections']}"  # Customize details as needed
-                    if "to" in entry["Occurrence Date & Time"]:
-                        start, end = entry["Occurrence Date & Time"].split(
+                    if "to" in str(entry["Occurrence Date & Time"]):
+                        start, end = str(entry["Occurrence Date & Time"]).split(
                             " to ")
                         start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
                         end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
@@ -94,7 +95,7 @@ else:
                         ])
                     else:
                         dt = datetime.strptime(
-                            entry["Occurrence Date & Time"], "%d/%m/%Y %H:%M")
+                            str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
                         data_for_plot.append(
                             {"Date": dt, "Section": location, "Details": details})
 

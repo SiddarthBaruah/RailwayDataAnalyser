@@ -3,7 +3,7 @@ from io import BytesIO
 from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
-
+import zipfile
 
 import streamlit as st
 
@@ -51,6 +51,7 @@ else:
         The processed string with '<br>' tags inserted.
         """
         result = ""
+        input_text= str(input_text)
         for i in range(0, len(input_text), max_width):
             result += input_text[i: i + max_width] + "<br>"
         return result[:-4]  # Remove the trailing '<br>'
@@ -65,9 +66,9 @@ else:
                     f"Occurrence Location: {entry['Occurrence Location']}<br>" \
                     f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
                     f"Sections: {entry['Sections']}"  # Customize details as needed
-                if "to" in entry["Occurrence Date & Time"]:
+                if "to" in str(entry["Occurrence Date & Time"]):
 
-                    start, end = entry["Occurrence Date & Time"].split(" to ")
+                    start, end = str(entry["Occurrence Date & Time"]).split(" to ")
                     start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
                     end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
                     data_for_plot.extend([
@@ -77,7 +78,7 @@ else:
                 else:
 
                     dt = datetime.strptime(
-                        entry["Occurrence Date & Time"], "%d/%m/%Y %H:%M")
+                        str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
                     data_for_plot.append(
                         {"Date": dt, "Section": section, "Details": details})
 
@@ -131,5 +132,101 @@ else:
                 file_name="dataframe.xlsx",
                 mime="application/vnd.ms-excel"
             )
+        # Allow multiple train selection
+        st.divider()
+        st.write("Select multiple trains to downlaod their data in separate excel files.")
+        train_selection_multi = st.multiselect("Select trains", trains_list)
+        
+        if train_selection_multi:
+            for train in train_selection_multi:
+                data_for_plot_multi = []
+                for index, entry in data.iterrows():
+                    try:
+                        if (train in str(entry["Occurrence Location"])):
+                            section = str(entry["Sections"])
+                            details = f"Details: {textwrap_html_style(entry['Occurrence Details'],80)}<br>" \
+                                f"Occurrence Location: {entry['Occurrence Location']}<br>" \
+                                f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
+                                f"Sections: {entry['Sections']}"
+                            if "to" in str(entry["Occurrence Date & Time"]):
+                                start, end = str(entry["Occurrence Date & Time"]).split(" to ")
+                                start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
+                                end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
+                                data_for_plot_multi.extend([
+                                    {"Date": start_dt, "Section": section, "Details": details, "Train": train},
+                                    {"Date": end_dt, "Section": section, "Details": details, "Train": train}
+                                ])
+                            else:
+                                try:
+                                    dt = datetime.strptime(str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
+                                except:
+                                    dt = "Invalid"
+                                data_for_plot_multi.append(
+                                    {"Date": dt, "Section": section, "Details": details, "Train": train})
+                    except Exception as e:
+                        print(e)
+                        print(str(entry["Occurrence Date & Time"]))
+
+                df_multi = pd.DataFrame(data_for_plot_multi)
+
+                if not df_multi.empty:
+                    excel_file_multi = to_excel(df_multi)
+                    st.download_button(
+                        label=f"Download {train} data file",
+                        data=excel_file_multi,
+                        file_name=f"{train}.xlsx",
+                        mime="application/vnd.ms-excel"
+                    )
     else:
         st.write("Select a train")
+    st.divider()
+    st.write("Click the button bellow to download all the data for different trains in different excel files. The data would be downloaded as a zip file.")
+    st.write("Please be patient as the download may take some time.")
+    if st.button("Download for all the trains"):
+        total_trains = len(trains_list)
+        download_text= "Operation in progress..."
+        download_bar= st.progress(0, download_text)
+        zip_buffer = BytesIO()
+        trains_count= 0
+        with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+            for train in trains_list:
+                data_for_plot_multi = []
+                for index, entry in data.iterrows():
+                    if (train in str(entry["Occurrence Location"])):
+                        section = str(entry["Sections"])
+                        details = f"Details: {textwrap_html_style(entry['Occurrence Details'],80)}<br>" \
+                            f"Occurrence Location: {entry['Occurrence Location']}<br>" \
+                            f"Occurrence Date & Time: {entry['Occurrence Date & Time']}<br>" \
+                            f"Sections: {entry['Sections']}"
+                        if "to" in str(entry["Occurrence Date & Time"]):
+                            start, end = str(entry["Occurrence Date & Time"]).split(" to ")
+                            start_dt = datetime.strptime(start, "%d/%m/%Y %H:%M")
+                            end_dt = datetime.strptime(end, "%d/%m/%Y %H:%M")
+                            data_for_plot_multi.extend([
+                                {"Date": start_dt, "Section": section, "Details": details, "Train": train},
+                                {"Date": end_dt, "Section": section, "Details": details, "Train": train}
+                            ])
+                        else:
+                            try:
+                                dt = datetime.strptime(str(entry["Occurrence Date & Time"]), "%d/%m/%Y %H:%M")
+                            except ValueError:
+                                data_for_plot_multi.append(
+                                {"Date": "Invalid", "Section": section, "Details": details, "Train": train})
+                            data_for_plot_multi.append(
+                                {"Date": dt, "Section": section, "Details": details, "Train": train})
+
+                df_multi = pd.DataFrame(data_for_plot_multi)
+                if not df_multi.empty:
+                    excel_file_multi = to_excel(df_multi)
+                    zip_file.writestr(f"{train}.xlsx", excel_file_multi)
+                trains_count+=1
+                download_bar.progress(trains_count/total_trains, f"Processing data of Train number: {train}, {trains_count} of {total_trains} trains processed.")
+        zip_buffer.seek(0)
+        st.download_button(
+            label="Download All Train Data",
+            data=zip_buffer,
+            file_name="train_data.zip",
+            mime="application/zip"
+        )
+
+        
